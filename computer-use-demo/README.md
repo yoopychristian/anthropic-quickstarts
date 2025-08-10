@@ -20,7 +20,7 @@ This repository helps you get started with computer use on Claude, with referenc
 - Build files to create a Docker container with all necessary dependencies
 - A computer use agent loop using the Anthropic API, Bedrock, or Vertex to access Claude 3.5 Sonnet, Claude 3.7 Sonnet, Claude 4 Sonnet, and Claude 4 Opus models
 - Anthropic-defined computer use tools
-- A streamlit app for interacting with the agent loop
+- A FastAPI backend for interacting with the agent loop (replaces the experimental Streamlit UI)
 
 Please use [this form](https://forms.gle/BT1hpBrqDPDUrCqo7) to provide feedback on the quality of the model responses, the API itself, or the quality of the documentation - we cannot wait to hear from you!
 
@@ -43,7 +43,7 @@ docker run \
     -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
     -v $HOME/.anthropic:/home/computeruse/.anthropic \
     -p 5900:5900 \
-    -p 8501:8501 \
+    -p 9000:9000 \
     -p 6080:6080 \
     -p 8080:8080 \
     -it ghcr.io/anthropics/anthropic-quickstarts:computer-use-demo-latest
@@ -70,7 +70,7 @@ docker run \
     -v $HOME/.aws:/home/computeruse/.aws \
     -v $HOME/.anthropic:/home/computeruse/.anthropic \
     -p 5900:5900 \
-    -p 8501:8501 \
+    -p 9000:9000 \
     -p 6080:6080 \
     -p 8080:8080 \
     -it ghcr.io/anthropics/anthropic-quickstarts:computer-use-demo-latest
@@ -92,7 +92,7 @@ docker run \
     -e AWS_REGION=us-west-2 \
     -v $HOME/.anthropic:/home/computeruse/.anthropic \
     -p 5900:5900 \
-    -p 8501:8501 \
+    -p 9000:9000 \
     -p 6080:6080 \
     -p 8080:8080 \
     -it ghcr.io/anthropics/anthropic-quickstarts:computer-use-demo-latest
@@ -115,7 +115,7 @@ docker run \
     -e ANTHROPIC_VERTEX_PROJECT_ID=$VERTEX_PROJECT_ID \
     -v $HOME/.config/gcloud/application_default_credentials.json:/home/computeruse/.config/gcloud/application_default_credentials.json \
     -p 5900:5900 \
-    -p 8501:8501 \
+    -p 9000:9000 \
     -p 6080:6080 \
     -p 8080:8080 \
     -it computer-use-demo
@@ -128,15 +128,24 @@ You can also set `GOOGLE_APPLICATION_CREDENTIALS` to use an arbitrary credential
 
 ### Accessing the demo app
 
-Once the container is running, open your browser to [http://localhost:8080](http://localhost:8080) to access the combined interface that includes both the agent chat and desktop view.
+Once the container is running, open your browser to [http://localhost:8080](http://localhost:8080) to access the combined interface that includes the basic HTML chat and desktop view. The API is available at `http://localhost:9000`.
 
 The container stores settings like the API key and custom system prompt in `~/.anthropic/`. Mount this directory to persist these settings between container runs.
 
 Alternative access points:
 
-- Streamlit interface only: [http://localhost:8501](http://localhost:8501)
 - Desktop view only: [http://localhost:6080/vnc.html](http://localhost:6080/vnc.html)
 - Direct VNC connection: `vnc://localhost:5900` (for VNC clients)
+- API base: `http://localhost:9000`
+
+### API quick reference
+
+- `POST /sessions` → create a session
+- `GET /sessions` → list sessions
+- `DELETE /sessions/{id}` → delete session
+- `GET /sessions/{id}/messages` → session transcript
+- `POST /sessions/{id}/messages` → send user text
+- `WS /ws/{id}` → subscribe to real-time events (assistant blocks, tool results, done)
 
 ## Screen size
 
@@ -147,7 +156,7 @@ docker run \
     -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
     -v $HOME/.anthropic:/home/computeruse/.anthropic \
     -p 5900:5900 \
-    -p 8501:8501 \
+    -p 9000:9000 \
     -p 6080:6080 \
     -p 8080:8080 \
     -e WIDTH=1920 \
